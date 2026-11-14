@@ -22,8 +22,7 @@ import { labelsToParam } from './params';
 /**
  * Pull Request 资源。
  *
- * 与旧版本相比的主要修复：
- * - list() 默认 per_page=100，并提供 listAll()；
+ * - list() 默认 per_page=100，并提供 listAll() 自动翻页；
  * - getComments()/getCommits() 自动翻页；
  * - update() 合并响应而不是整体替换（PATCH 可能返回部分字段）；
  * - merge() 按官方字段发送 merge_method/title/description 等参数。
@@ -125,12 +124,9 @@ export class PullRequest {
   }
 
   /**
-   * 合并 PR。
-   *
-   * 传字符串时兼容旧版本语义，作为合并标题发送（旧版发送的 message 字段
-   * 并不会被 GitCode 使用）。
+   * 合并 PR。传 title 时作为合并标题发送。
    */
-  async merge(params?: string | MergePullRequestParams): Promise<MergePullRequestResult> {
+  async merge(params?: MergePullRequestParams): Promise<MergePullRequestResult> {
     return this.http.put<MergePullRequestResult>(`${this.url()}/merge`, buildMergeBody(params));
   }
 
@@ -258,11 +254,10 @@ function buildUpdateBody(params: UpdatePullRequestParams): Record<string, unknow
   return body;
 }
 
-function buildMergeBody(params?: string | MergePullRequestParams): Record<string, unknown> {
-  if (params === undefined) return {};
-  if (typeof params === 'string') return { title: params };
-
+function buildMergeBody(params?: MergePullRequestParams): Record<string, unknown> {
   const body: Record<string, unknown> = {};
+  if (params === undefined) return body;
+
   if (params.mergeMethod !== undefined) body.merge_method = params.mergeMethod;
   if (params.title !== undefined) body.title = params.title;
   if (params.description !== undefined) body.description = params.description;

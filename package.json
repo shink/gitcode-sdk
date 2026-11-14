@@ -48,12 +48,12 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://gitcode.com/jiyuanhao/gitcode-sdk.git"
+    "url": "git+https://github.com/shink/gitcode-sdk.git"
   },
   "bugs": {
-    "url": "https://gitcode.com/jiyuanhao/gitcode-sdk/issues"
+    "url": "https://github.com/shink/gitcode-sdk/issues"
   },
-  "homepage": "https://gitcode.com/jiyuanhao/gitcode-sdk#readme",
+  "homepage": "https://github.com/shink/gitcode-sdk#readme",
   "devDependencies": {
     "@types/node": "^22.15.0",
     "@typescript-eslint/eslint-plugin": "^8.57.0",

@@ -31,7 +31,7 @@ interface ResolvedAppOptions {
  * GitCodeApp 负责事件轮询与回调分发。
  *
  * 注意：
- * - 默认仍会在构造时自动开始轮询（兼容 1.0），但推荐传 autoStart:false 后显式 start()；
+ * - 默认不会自动开始轮询；传 autoStart: true 或显式调用 start() 才会启动；
  * - stop() 只停止定时器，不会清空已注册的监听器；dispose() 才会释放资源；
  * - 回调并行执行，单个回调失败不会影响其他回调。
  */
@@ -328,15 +328,11 @@ export class GitCodeApp {
 
 function resolveAppOptions(input: number | GitCodeAppOptions): ResolvedAppOptions {
   const options = typeof input === 'number' ? { intervalMs: input } : (input ?? {});
-  const intervalMs = positiveInteger(
-    options.intervalMs ?? options.interval,
-    DEFAULT_INTERVAL_MS,
-    'intervalMs'
-  );
+  const intervalMs = positiveInteger(options.intervalMs, DEFAULT_INTERVAL_MS, 'intervalMs');
 
   return {
     intervalMs,
-    autoStart: options.autoStart !== false,
+    autoStart: options.autoStart === true,
     emitExisting: options.emitExisting === true,
     initialLookbackMs: nonNegativeInteger(
       options.initialLookbackMs,

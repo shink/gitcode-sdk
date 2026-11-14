@@ -1,8 +1,5 @@
 name: CI
 
-permissions:
-  contents: read
-
 on:
   push:
     branches:
@@ -10,6 +7,9 @@ on:
       - master
       - develop
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -20,15 +20,15 @@ jobs:
         node-version: [20, 22]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
 
-      - name: Install
+      - name: Install dependencies
         run: npm ci
 
       - name: Lint

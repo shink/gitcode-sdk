@@ -16,12 +16,10 @@ import { labelsToParam } from './params';
 /**
  * Issue 资源。
  *
- * 与旧版本相比的主要修复：
- * - list() 默认 per_page=100（旧版默认 20，会静默漏数据）；
- * - 提供 listAll() 自动翻页；
+ * - list() 默认 per_page=100；
+ * - listAll() 自动翻页获取全部 Issue；
  * - getComments() 默认获取全部评论；
- * - close()/reopen() 使用 GitCode 实际支持的 state=close/reopen，
- *   旧版的 state_event 会被服务端接受但静默忽略。
+ * - close()/reopen() 使用 GitCode 实际支持的 state=close/reopen。
  */
 export class Issue {
   constructor(
@@ -80,10 +78,7 @@ export class Issue {
   }
 
   /**
-   * 更新 Issue。
-   *
-   * GitCode 的 Issue PATCH 接口使用 `state=close|reopen`（注意不是 closed/open，
-   * 也不是 state_event）。这里兼容传入 open/closed，并做归一化。
+   * 更新 Issue。GitCode 的 Issue PATCH 接口使用 `state=close|reopen`。
    */
   async update(params: UpdateIssueParams): Promise<IssueData> {
     const body = buildUpdateBody(params);
@@ -189,7 +184,7 @@ function buildUpdateBody(params: UpdateIssueParams): Record<string, unknown> {
   if (params.title !== undefined) body.title = params.title;
   if (params.body !== undefined) body.body = params.body;
   if (params.state !== undefined) {
-    body.state = params.state === 'open' || params.state === 'reopen' ? 'reopen' : 'close';
+    body.state = params.state;
   }
   if (params.labels !== undefined) body.labels = labelsToParam(params.labels);
   if (params.assignee !== undefined) body.assignee = params.assignee;

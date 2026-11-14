@@ -99,7 +99,7 @@ process.on('SIGINT', () => {
 });
 ```
 
-> `GitCodeApp` 默认 `autoStart: true` 以兼容 1.0；新代码建议传 `autoStart: false` 后显式 `start()`。
+> `GitCodeApp` 默认 `autoStart: false`；需要开始轮询时显式调用 `start()`。
 
 ## 事件模型
 
@@ -128,7 +128,7 @@ new GitCodeApp(config, repo, {
 | PR 事件    | 变化的 PR 列表 + 仅对 `notes` 或 `head.sha` 变化的 PR 拉评论/提交 |
 | 无监听器   | 0（跳过轮询）                                                     |
 
-相比 1.0 的“遍历每个 Issue 拉评论”，复杂度从 O(N) 降到接近 O(1) + O(变化数)。
+采用仓库级评论 `since` 查询，复杂度接近 O(1) + O(变化数)，而非逐个 Issue 拉取评论。
 
 ## 配置
 
@@ -151,8 +151,8 @@ new GitCodeApp(config, repo, {
 
 | 字段                    | 默认值                   | 说明                             |
 | ----------------------- | ------------------------ | -------------------------------- |
-| `intervalMs`            | `30000`                  | 轮询间隔；兼容旧参数 `interval`  |
-| `autoStart`             | `true`                   | 构造时自动启动；推荐 `false`     |
+| `intervalMs`            | `30000`                  | 轮询间隔                         |
+| `autoStart`             | `false`                  | 构造时自动启动；默认关闭，需显式 `start()` |
 | `emitExisting`          | `false`                  | 首次轮询是否补发历史事件         |
 | `initialLookbackMs`     | `intervalMs`             | `emitExisting` 的回看窗口        |
 | `overlapMs`             | `min(5000, intervalMs)`  | 水位线重叠，抵消索引延迟         |
@@ -193,7 +193,7 @@ client.close();
 ```ts
 const issue = await repo.issues.get(22);
 await issue.refresh();
-await issue.update({ title, body, state: 'closed', labels: ['bug'] });
+await issue.update({ title, body, state: 'close', labels: ['bug'] });
 await issue.close();
 await issue.reopen();
 await issue.createComment('body');
@@ -201,7 +201,7 @@ await issue.getComments(); // 全部评论
 await issue.listComments({ perPage: 20, page: 1 });
 ```
 
-> GitCode 的 Issue PATCH 接口使用 `state=close|reopen`。SDK 会把 `state: 'closed'` 归一化为 `close`，不会发送无效的 `state_event`。
+> GitCode 的 Issue PATCH 接口使用 `state=close|reopen`（不是 `closed`/`open`，也不是 `state_event`）。
 
 ### PullRequest
 
@@ -209,7 +209,7 @@ await issue.listComments({ perPage: 20, page: 1 });
 const pr = await repo.pulls.get(5);
 await pr.refresh();
 await pr.update({ title, state: 'closed', labels: ['bug'] });
-await pr.merge('合并标题'); // 兼容旧版字符串参数
+await pr.merge({ title: '合并标题' });
 await pr.merge({ mergeMethod: 'rebase', squash: true });
 await pr.isMerged();
 await pr.createComment('body');
@@ -310,16 +310,6 @@ src/
 ├── logger.ts
 └── index.ts
 ```
-
-## 从 1.0 迁移
-
-1. **首次轮询不再补发**：默认建立基线。需要旧行为时设置 `emitExisting: true`。
-2. **`stop()` 不再清空监听器**：只停止定时器；清空请用 `removeAllListeners()` / `dispose()`。
-3. **默认不写日志文件**：需要文件日志时显式传 `filePath`。
-4. **`Issue.close()/reopen()` 现在真正生效**：旧版本发送的 `state_event` 会被 GitCode 接受但忽略。
-5. **列表默认 `per_page=100`**：旧版本默认 20，可能静默漏数据；全部数据请用 `listAll()`。
-6. **`getComments()` 自动翻页**：需要单页时用 `listComments()`。
-7. **`Issue.number` 仍为 string，`PullRequest.number` 仍为 number**：与 API 返回保持一致。
 
 ## 已知限制
 

@@ -80,21 +80,20 @@ test('Issue.getComments fetches all pages by default', async () => {
   assert.equal(call.url, '/repos/owner/project/issues/22/comments');
 });
 
-test('Issue.update sends state=close not state_event', async () => {
+test('Issue.update sends the GitCode state value directly', async () => {
   const issueData = makeIssue({ number: '22', state: 'open' });
   const fake = new FakeHttpClient({ issues: [issueData] });
   fake.responses.patch = { ...issueData, state: 'closed', title: 'changed' };
   const http = asHttpClient(fake);
   const issue = await Issue.get(http, repo, 22);
 
-  const updated = await issue.update({ state: 'closed' });
+  const updated = await issue.update({ state: 'close' });
 
   const call = lastCall(fake);
   assert.ok(call);
   assert.equal(call.method, 'PATCH');
   assert.equal(call.url, '/repos/owner/project/issues/22');
   assert.deepEqual(call.body, { state: 'close' });
-  assert.equal((call.body as Record<string, unknown>).state_event, undefined);
   assert.equal(updated.state, 'closed');
   assert.equal(updated.title, 'changed');
   assert.equal(issue.state, 'closed');
@@ -114,7 +113,7 @@ test('Issue.close and reopen use the GitCode state aliases', async () => {
   await issue.reopen();
   assert.deepEqual(lastCall(fake)?.body, { state: 'reopen' });
 
-  await issue.update({ state: 'open' });
+  await issue.update({ state: 'reopen' });
   assert.deepEqual(lastCall(fake)?.body, { state: 'reopen' });
 });
 
@@ -259,14 +258,14 @@ test('PullRequest.update maps state and labels', async () => {
   assert.equal(updated.state, 'closed');
 });
 
-test('PullRequest.merge maps legacy string and object parameters', async () => {
+test('PullRequest.merge maps title and merge parameters', async () => {
   const pr = makePullRequest({ number: 5 });
   const fake = new FakeHttpClient({ pulls: [pr] });
   fake.responses.put = { merged: 1, sha: 'merge-sha' };
   const http = asHttpClient(fake);
   const pullRequest = await PullRequest.get(http, repo, 5);
 
-  const result = await pullRequest.merge('merge title');
+  const result = await pullRequest.merge({ title: 'merge title' });
   assert.equal(result.sha, 'merge-sha');
   assert.deepEqual(lastCall(fake)?.body, { title: 'merge title' });
 

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-import { Logger, LogLevel, getLogger, logger, setLogger, type LogEntry } from '../src/logger';
+import { Logger, LogLevel, getLogger, setLogger, type LogEntry } from '../src/logger';
 import { sleep } from '../src/utils/concurrency';
 
 test('Logger filters levels and formats args/scope', () => {
@@ -75,7 +75,7 @@ test('Logger writes to a file without creating one by default', async t => {
   assert.match(content, /^\[T\]\[INFO\] file line\n$/);
 });
 
-test('setLogger replaces the default logger used by the logger proxy', () => {
+test('setLogger replaces the default logger returned by getLogger', () => {
   const previous = getLogger();
   const entries: LogEntry[] = [];
   const custom = new Logger({
@@ -86,8 +86,9 @@ test('setLogger replaces the default logger used by the logger proxy', () => {
 
   try {
     setLogger(custom);
-    logger.info('forwarded');
-    logger.child('scope').error('nested');
+    const log = getLogger();
+    log.info('forwarded');
+    log.child('scope').error('nested');
 
     assert.equal(entries.length, 2);
     assert.equal(entries[0].line, '[T][INFO] forwarded');

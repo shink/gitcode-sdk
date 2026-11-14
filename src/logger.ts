@@ -244,23 +244,6 @@ export function createLogger(config: Partial<LoggerConfig> = {}): Logger {
   return new Logger(config);
 }
 
-/**
- * 兼容旧版本的全局 logger 导出。所有调用都会转发到当前默认日志器，
- * 因此 setLogger() 之后 logger.info() 也会使用新的实现。
- */
-export const logger: LoggerLike &
-  Pick<Logger, 'setLevel' | 'setFilePath' | 'close' | 'isLevelEnabled'> = {
-  debug: (message, ...args) => activeLogger.debug(message, ...args),
-  info: (message, ...args) => activeLogger.info(message, ...args),
-  warn: (message, ...args) => activeLogger.warn(message, ...args),
-  error: (message, ...args) => activeLogger.error(message, ...args),
-  child: scope => activeLogger.child(scope),
-  setLevel: level => activeLogger.setLevel?.(level),
-  setFilePath: filePath => activeLogger.setFilePath?.(filePath),
-  close: () => activeLogger.close?.(),
-  isLevelEnabled: level => activeLogger.isLevelEnabled?.(level) ?? false,
-};
-
 function formatArg(value: unknown): string {
   if (value === undefined) return '';
   if (value === null) return 'null';

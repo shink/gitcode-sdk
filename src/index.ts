@@ -23,7 +23,7 @@ export type { IssueCheckResult } from './listeners/issue-listener';
 export { PullRequestEventHandler } from './listeners/pr-listener';
 export type { PRCheckResult } from './listeners/pr-listener';
 export type { EventHandlerOptions } from './listeners/polling-state';
-export { Logger, LogLevel, createLogger, getLogger, logger, setLogger } from './logger';
+export { Logger, LogLevel, createLogger, getLogger, setLogger } from './logger';
 export { Issue } from './models/issue';
 export { PullRequest } from './models/pull-request';
 export * from './types';

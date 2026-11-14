@@ -233,9 +233,6 @@ export interface PullRequestCommentData {
   [key: string]: unknown;
 }
 
-/** 兼容旧版本：Issue 与 PR 评论的联合类型。 */
-export type CommentData = IssueCommentData | PullRequestCommentData;
-
 // ---------------------------------------------------------------------------
 // Commit / Diff
 // ---------------------------------------------------------------------------
@@ -397,15 +394,10 @@ export type EventCallbackOf<E extends EventType> = (
 // 轮询与 App 配置
 // ---------------------------------------------------------------------------
 
-export interface PollOptions {
+export interface GitCodeAppOptions {
   /** 轮询间隔（毫秒），默认 30000。 */
-  interval?: number;
-  /** 轮询间隔（毫秒），interval 的别名。 */
   intervalMs?: number;
-}
-
-export interface GitCodeAppOptions extends PollOptions {
-  /** 构造时自动开始轮询，默认 true（兼容旧版本）；建议显式调用 start()。 */
+  /** 构造时是否自动开始轮询，默认 false；需要立即开始请显式调用 start()。 */
   autoStart?: boolean;
   /**
    * 首次轮询是否补发 initialLookbackMs 内已存在的事件，默认 false。
@@ -545,11 +537,8 @@ export interface CreateIssueParams {
 export interface UpdateIssueParams {
   title?: string;
   body?: string;
-  /**
-   * 关闭/重新打开 Issue。GitCode 的 Issue PATCH 接口使用 state=close/reopen，
-   * 兼容传入 open/closed。
-   */
-  state?: 'open' | 'closed' | 'close' | 'reopen';
+  /** 关闭/重新打开 Issue（GitCode 使用 state=close/reopen）。 */
+  state?: 'close' | 'reopen';
   labels?: LabelsInput;
   assignee?: string;
   milestone?: number;
