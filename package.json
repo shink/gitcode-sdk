@@ -1,7 +1,7 @@
 {
   "name": "gitcode-sdk",
-  "version": "1.1.0",
-  "description": "Lightweight GitCode API SDK with incremental event polling",
+  "version": "1.0.0",
+  "description": "Lightweight GitCode SDK",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -44,7 +44,7 @@
     "issue",
     "pull-request"
   ],
-  "author": "jiyuanhao",
+  "author": "Yuanhao Ji",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
